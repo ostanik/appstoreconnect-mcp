@@ -199,22 +199,21 @@ class AppStore:
                 version_id, build_id)
             return self.version_service.submit_for_review(version_id)
 
-        elif version_state == "PENDING_DEVELOPER_RELEASE":
+        if version_state == "PENDING_DEVELOPER_RELEASE":
             return self.version_service.release_pending_version(version_id)
 
-        elif version_state == "WAITING_FOR_REVIEW":
+        if version_state == "WAITING_FOR_REVIEW":
             # Assuming build is already associated, or we could add it here
             # as well
             return {
                 "status": "Already in 'WAITING_FOR_REVIEW' state. No action taken."}
 
-        elif version_state == "READY_FOR_SALE":
+        if version_state == "READY_FOR_SALE":
             return {
                 "status": "Version is already 'READY_FOR_SALE'. No action taken."}
 
-        else:
-            return {
-                "error": f"Version is in an unhandled state: '{version_state}'. No action taken."}
+        return {
+            "error": f"Version is in an unhandled state: '{version_state}'. No action taken."}
 
     def create_beta_group(self, name, bundle_id):
         """Create a new beta group."""
