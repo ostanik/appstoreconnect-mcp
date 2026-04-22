@@ -122,6 +122,20 @@ class TestAppStoreConnectApi:
     def test_list_builds_empty_bundle_id(self):
         """Test list_builds with empty bundle_id."""
         result, status_code = app_store_connect_api.list_builds("")
-        
+
         assert result == {"error": "Missing required parameter: bundleId"}
         assert status_code == 400
+
+    def test_release_version_accepts_platform_kwarg(self):
+        """Regression: AppStore.release_version must accept `platform=` kwarg.
+
+        The MCP dispatcher in app_store_connect_server.py passes platform=
+        as a keyword argument. A prior bug named the parameter `_platform`,
+        which raised TypeError when called via the full MCP chain from
+        unit tests or alternate entry points.
+        """
+        import inspect
+        from appstore_service.app_store import AppStore
+        sig = inspect.signature(AppStore.release_version)
+        # bind (self=None, bundle_id, version_string, build_number, platform=...)
+        sig.bind(None, "com.example.app", "1.0.0", "42", platform="IOS")

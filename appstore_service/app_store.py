@@ -117,7 +117,7 @@ class AppStore:
             bundle_id,
             version_string,
             build_number,
-            _platform="IOS"):
+            platform="IOS"):
         """Creates a new version, assigns a build and submits it for review."""
         try:
             app_id = self.app_info_service.get_app_id_by_bundle_id(bundle_id)
