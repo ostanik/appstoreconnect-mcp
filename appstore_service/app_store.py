@@ -251,6 +251,9 @@ def main():
         description="Interact with the App Store Connect API.")
     subparsers = parser.add_subparsers(dest="action", required=True)
 
+    # List apps
+    subparsers.add_parser("list_apps", help="List all apps on the account.")
+
     # Get app info
     parser_get_app = subparsers.add_parser(
         "get_app_info", help="Get information for a specific app.")
