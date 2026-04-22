@@ -51,16 +51,25 @@ pip install -r requirements.txt
 You need to set up App Store Connect API access:
 
 1. **Generate API Key**: Go to [App Store Connect](https://appstoreconnect.apple.com/) → Users and Access → Keys → Create API Key
-2. **Download the `.p8` file** and place it as `AppStoreConnectAuthKey.p8` in the project root
-3. **Configure credentials** in `appstore_service/config.py`:
+2. **Download the `.p8` file** and place it as `AppStoreConnectAuthKey.p8` in the project root.
+3. **Create a `.env` file** by copying `.env.example`:
 
-```python
-KEY_ID = "YOUR_KEY_ID"  # 10-character key ID from App Store Connect
-ISSUER_ID = "YOUR_ISSUER_ID"  # UUID from App Store Connect
-PRIVATE_KEY_PATH = "AppStoreConnectAuthKey.p8"  # Path to your .p8 file
-APP_ID = "YOUR_APP_ID"  # Your app's ID (optional, for specific operations)
-EXPIRATION_MINUTES = 19  # JWT token expiration (max 20 minutes)
-```
+   ```bash
+   cp .env.example .env
+   ```
+
+   Then fill in your values:
+
+   ```
+   ASC_KEY_ID=YOUR_10_CHAR_KEY_ID
+   ASC_ISSUER_ID=YOUR_UUID_ISSUER_ID
+   ASC_PRIVATE_KEY_PATH=AppStoreConnectAuthKey.p8
+   ASC_APP_ID=YOUR_APP_ID
+   ASC_EXPIRATION_MINUTES=19
+   ```
+
+   `.env` is gitignored and must never be committed. `python-dotenv` loads
+   these on import; there is nothing to edit in Python source.
 
 ### 3. MCP Configuration
 
@@ -84,16 +93,18 @@ Once configured with an MCP-compatible AI assistant, you can use natural languag
 
 ### Direct API Access
 
-The server exposes these MCP tools:
+The server exposes these MCP tools (all prefixed `app-store-connect_`):
 
-- `list_apps`: Get all applications
-- `get_app_info`: Get detailed app information  
-- `list_builds`: Get builds for an app
-- `list_beta_groups`: Get beta testing groups
-- `list_beta_testers`: Get testers in a group
-- `create_beta_group`: Create new beta group
-- `submit_for_review`: Submit app for App Store review
-- `release_version`: Release a new app version
+- `app-store-connect_list-apps` — Get all applications
+- `app-store-connect_get-app-info` — Get detailed app information
+- `app-store-connect_list-builds` — Get builds for an app
+- `app-store-connect_list-beta-groups` — Get beta groups for an app
+- `app-store-connect_list-testers-in-group` — Get testers in a beta group
+- `app-store-connect_create-beta-group` — Create a new beta group
+- `app-store-connect_add-beta-tester-to-group` — Add a tester to a beta group
+- `app-store-connect_submit-for-review` — Submit an app version for review
+- `app-store-connect_release-version` — Release a new app version
+- `app-store-connect_get-performance-metrics` — Get performance metrics for an app
 
 ## Development
 
