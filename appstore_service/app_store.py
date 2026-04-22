@@ -215,6 +215,25 @@ class AppStore:
         return {
             "error": f"Version is in an unhandled state: '{version_state}'. No action taken."}
 
+    def submit_for_review(self, bundle_id, version_string):
+        """Submit an existing App Store version for review.
+
+        Looks up the app by bundle ID, finds the App Store version with the
+        given version string, and submits it. Assumes the version already
+        exists in App Store Connect and has a build associated with it.
+        """
+        try:
+            app_id = self.app_info_service.get_app_id_by_bundle_id(bundle_id)
+            if not app_id:
+                return {"error": f"App with bundle ID {bundle_id} not found."}
+            version_info = self._find_version_info(app_id, version_string)
+            if not version_info:
+                return {
+                    "error": f"Version {version_string} not found for app {bundle_id}."}
+            return self.version_service.submit_for_review(version_info["id"])
+        except requests.exceptions.HTTPError as err:
+            return self._handle_error(err)
+
     def create_beta_group(self, name, bundle_id):
         """Create a new beta group."""
         try:
