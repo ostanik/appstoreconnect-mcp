@@ -65,7 +65,7 @@ def handle_tools_list(message):
         "result": {
             "tools": [
                 {
-                    "name": "app-store-connect/list-apps",
+                    "name": "app-store-connect_list-apps",
                     "description": "List all apps in App Store Connect",
                     "inputSchema": {
                         "type": "object",
@@ -73,7 +73,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/get-app-info",
+                    "name": "app-store-connect_get-app-info",
                     "description": "Get detailed information about an app",
                     "inputSchema": {
                         "type": "object",
@@ -87,21 +87,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/list-beta-testers",
-                    "description": "List all beta testers in a specific group",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "groupId": {
-                                "type": "string",
-                                "description": "The ID of the beta group"
-                            }
-                        },
-                        "required": ["groupId"]
-                    }
-                },
-                {
-                    "name": "app-store-connect/list-beta-groups",
+                    "name": "app-store-connect_list-beta-groups",
                     "description": "List all beta groups for an app",
                     "inputSchema": {
                         "type": "object",
@@ -115,7 +101,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/list-testers-in-group",
+                    "name": "app-store-connect_list-testers-in-group",
                     "description": "List all beta testers in a specific group",
                     "inputSchema": {
                         "type": "object",
@@ -129,7 +115,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/list-builds",
+                    "name": "app-store-connect_list-builds",
                     "description": "List all builds for an app",
                     "inputSchema": {
                         "type": "object",
@@ -143,7 +129,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/submit-for-review",
+                    "name": "app-store-connect_submit-for-review",
                     "description": "Submit an app version for review",
                     "inputSchema": {
                         "type": "object",
@@ -161,7 +147,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/create-beta-group",
+                    "name": "app-store-connect_create-beta-group",
                     "description": "Create a new beta group",
                     "inputSchema": {
                         "type": "object",
@@ -179,7 +165,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/add-beta-tester-to-group",
+                    "name": "app-store-connect_add-beta-tester-to-group",
                     "description": "Add a beta tester to a group",
                     "inputSchema": {
                         "type": "object",
@@ -197,7 +183,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/release-version",
+                    "name": "app-store-connect_release-version",
                     "description": "Release a new version of an app",
                     "inputSchema": {
                         "type": "object",
@@ -224,7 +210,7 @@ def handle_tools_list(message):
                     }
                 },
                 {
-                    "name": "app-store-connect/get-performance-metrics",
+                    "name": "app-store-connect_get-performance-metrics",
                     "description": "Get performance metrics for an app",
                     "inputSchema": {
                         "type": "object",
@@ -255,48 +241,35 @@ def handle_tools_call(message):
     error = None
 
     try:
-        if tool_name == "app-store-connect/list-apps":
+        if tool_name == "app-store-connect_list-apps":
             result = api.list_apps()
-        elif tool_name == "app-store-connect/get-app-info":
+        elif tool_name == "app-store-connect_get-app-info":
             result = api.get_app_info(bundle_id=args.get("bundleId"))
-        elif tool_name == "app-store-connect/list-beta-testers":
-            # Server-side workaround for client-side caching.
-            # The client might still send a bundleId, but we will prioritize
-            # the groupId.
-            group_id = args.get("groupId")
-            if not group_id:
-                # Fallback for older client definitions that might not have
-                # groupId
-                error = {
-                    "code": -32602,
-                    "message": "Invalid params: groupId is required."}
-            else:
-                result = api.list_testers_in_group(group_id=group_id)
-        elif tool_name == "app-store-connect/list-beta-groups":
+        elif tool_name == "app-store-connect_list-beta-groups":
             result = api.list_beta_groups(bundle_id=args.get("bundleId"))
-        elif tool_name == "app-store-connect/list-testers-in-group":
+        elif tool_name == "app-store-connect_list-testers-in-group":
             result = api.list_testers_in_group(group_id=args.get("groupId"))
-        elif tool_name == "app-store-connect/list-builds":
+        elif tool_name == "app-store-connect_list-builds":
             result = api.list_builds(bundle_id=args.get("bundleId"))
-        elif tool_name == "app-store-connect/submit-for-review":
+        elif tool_name == "app-store-connect_submit-for-review":
             result = api.submit_for_review(
                 bundle_id=args.get("bundleId"),
                 version=args.get("version"))
-        elif tool_name == "app-store-connect/create-beta-group":
+        elif tool_name == "app-store-connect_create-beta-group":
             result = api.create_beta_group(
                 name=args.get("name"),
                 bundle_id=args.get("bundleId"))
-        elif tool_name == "app-store-connect/add-beta-tester-to-group":
+        elif tool_name == "app-store-connect_add-beta-tester-to-group":
             result = api.add_beta_tester_to_group(
                 email=args.get("email"), group_id=args.get("groupId"))
-        elif tool_name == "app-store-connect/release-version":
+        elif tool_name == "app-store-connect_release-version":
             result = api.release_version(
                 bundle_id=args.get("bundleId"),
                 version_string=args.get("version"),
                 build_number=args.get("buildNumber"),
                 platform=args.get("platform", "IOS")
             )
-        elif tool_name == "app-store-connect/get-performance-metrics":
+        elif tool_name == "app-store-connect_get-performance-metrics":
             result = api.get_performance_metrics(
                 bundle_id=args.get("bundleId"))
         else:
