@@ -64,7 +64,6 @@ You need to set up App Store Connect API access:
    ASC_KEY_ID=YOUR_10_CHAR_KEY_ID
    ASC_ISSUER_ID=YOUR_UUID_ISSUER_ID
    ASC_PRIVATE_KEY_PATH=AppStoreConnectAuthKey.p8
-   ASC_APP_ID=YOUR_APP_ID
    ASC_EXPIRATION_MINUTES=19
    ```
 

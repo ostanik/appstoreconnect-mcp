@@ -14,5 +14,4 @@ KEY_ID = os.getenv("ASC_KEY_ID")
 ISSUER_ID = os.getenv("ASC_ISSUER_ID")
 PRIVATE_KEY_PATH = os.getenv(
     "ASC_PRIVATE_KEY_PATH", "AppStoreConnectAuthKey.p8")
-APP_ID = os.getenv("ASC_APP_ID")
 EXPIRATION_MINUTES = int(os.getenv("ASC_EXPIRATION_MINUTES", "19"))

@@ -1,5 +1,4 @@
 """Service for retrieving App Store Connect app information and metadata."""
-from . import config
 from ._base import BaseService
 
 
@@ -69,7 +68,7 @@ class AppInfoService(BaseService):
             return version_id
         print(
             f"No App Store Version found in 'PREPARE_FOR_SUBMISSION' state "
-            f"for app ID {config.APP_ID}.")
+            f"for app ID {app_id}.")
         print("Please ensure there is an app version created in App Store Connect "
               "that is ready for build assignment.")
         return None
