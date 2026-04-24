@@ -112,13 +112,19 @@ class AppStore:
         except requests.exceptions.HTTPError as err:
             return self._handle_error(err)
 
+    SUPPORTED_PLATFORMS = ("IOS", "MAC_OS", "TV_OS", "VISION_OS")
+
     def release_version(
             self,
             bundle_id,
             version_string,
             build_number,
             platform="IOS"):
-        """Creates a new version, assigns a build and submits it for review."""
+        """Assigns a build to an existing version and submits it for review."""
+        if platform not in self.SUPPORTED_PLATFORMS:
+            return {
+                "error": f"Unsupported platform {platform!r}. "
+                         f"Expected one of: {', '.join(self.SUPPORTED_PLATFORMS)}."}
         try:
             app_id = self.app_info_service.get_app_id_by_bundle_id(bundle_id)
             if not app_id:
@@ -135,8 +141,9 @@ class AppStore:
             version_info = self._find_version_info(app_id, version_string)
             if not version_info:
                 return {
-                    "error": f"Version {version_string} not found. "
-                             f"Please create it on App Store Connect first."}
+                    "error": f"Version {version_string} not found for platform "
+                             f"{platform}. Please create it on App Store Connect "
+                             f"first."}
 
             return self._handle_version_state(version_info, build_id)
 

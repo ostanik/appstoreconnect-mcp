@@ -228,6 +228,35 @@ def handle_tools_list(message):
     }
 
 
+TOOL_DISPATCH = {
+    "app-store-connect_list-apps": lambda args: api.list_apps(),
+    "app-store-connect_get-app-info": lambda args: api.get_app_info(
+        bundle_id=args.get("bundleId")),
+    "app-store-connect_list-beta-groups": lambda args: api.list_beta_groups(
+        bundle_id=args.get("bundleId")),
+    "app-store-connect_list-testers-in-group": lambda args: api.list_testers_in_group(
+        group_id=args.get("groupId")),
+    "app-store-connect_list-builds": lambda args: api.list_builds(
+        bundle_id=args.get("bundleId")),
+    "app-store-connect_submit-for-review": lambda args: api.submit_for_review(
+        bundle_id=args.get("bundleId"),
+        version=args.get("version")),
+    "app-store-connect_create-beta-group": lambda args: api.create_beta_group(
+        name=args.get("name"),
+        bundle_id=args.get("bundleId")),
+    "app-store-connect_add-beta-tester-to-group": lambda args: api.add_beta_tester_to_group(
+        email=args.get("email"),
+        group_id=args.get("groupId")),
+    "app-store-connect_release-version": lambda args: api.release_version(
+        bundle_id=args.get("bundleId"),
+        version_string=args.get("version"),
+        build_number=args.get("buildNumber"),
+        platform=args.get("platform", "IOS")),
+    "app-store-connect_get-performance-metrics": lambda args: api.get_performance_metrics(
+        bundle_id=args.get("bundleId")),
+}
+
+
 def handle_tools_call(message):
     """Handle the tools/call message from Cursor."""
     params = message.get("params", {})
@@ -240,49 +269,22 @@ def handle_tools_call(message):
     result = None
     error = None
 
-    try:
-        if tool_name == "app-store-connect_list-apps":
-            result = api.list_apps()
-        elif tool_name == "app-store-connect_get-app-info":
-            result = api.get_app_info(bundle_id=args.get("bundleId"))
-        elif tool_name == "app-store-connect_list-beta-groups":
-            result = api.list_beta_groups(bundle_id=args.get("bundleId"))
-        elif tool_name == "app-store-connect_list-testers-in-group":
-            result = api.list_testers_in_group(group_id=args.get("groupId"))
-        elif tool_name == "app-store-connect_list-builds":
-            result = api.list_builds(bundle_id=args.get("bundleId"))
-        elif tool_name == "app-store-connect_submit-for-review":
-            result = api.submit_for_review(
-                bundle_id=args.get("bundleId"),
-                version=args.get("version"))
-        elif tool_name == "app-store-connect_create-beta-group":
-            result = api.create_beta_group(
-                name=args.get("name"),
-                bundle_id=args.get("bundleId"))
-        elif tool_name == "app-store-connect_add-beta-tester-to-group":
-            result = api.add_beta_tester_to_group(
-                email=args.get("email"), group_id=args.get("groupId"))
-        elif tool_name == "app-store-connect_release-version":
-            result = api.release_version(
-                bundle_id=args.get("bundleId"),
-                version_string=args.get("version"),
-                build_number=args.get("buildNumber"),
-                platform=args.get("platform", "IOS")
-            )
-        elif tool_name == "app-store-connect_get-performance-metrics":
-            result = api.get_performance_metrics(
-                bundle_id=args.get("bundleId"))
-        else:
-            error = {
-                "code": -32601,
-                "message": f"Tool '{tool_name}' not found"
-            }
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logging.error("Error calling tool %s: %s", tool_name, e, exc_info=True)
+    handler = TOOL_DISPATCH.get(tool_name)
+    if handler is None:
         error = {
-            "code": -32600,
-            "message": f"Error executing tool '{tool_name}': {e}"
+            "code": -32601,
+            "message": f"Tool '{tool_name}' not found"
         }
+    else:
+        try:
+            result = handler(args)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logging.error(
+                "Error calling tool %s: %s", tool_name, e, exc_info=True)
+            error = {
+                "code": -32600,
+                "message": f"Error executing tool '{tool_name}': {e}"
+            }
 
     response = {
         "jsonrpc": "2.0",

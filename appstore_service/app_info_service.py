@@ -1,30 +1,17 @@
 """Service for retrieving App Store Connect app information and metadata."""
-import requests
 from . import config
-from .api_auth import AppStoreConnectAuth
-
-# Default timeout for all requests (30 seconds)
-REQUEST_TIMEOUT = 30
+from ._base import BaseService
 
 
-class AppInfoService:
+class AppInfoService(BaseService):
     """Service for managing App Store Connect app information and metadata operations."""
-
-    def __init__(self, auth: AppStoreConnectAuth):
-        self.auth = auth
 
     def list_apps(self):
         """
         Fetch a list of all apps on the account.
         Endpoint: GET https://api.appstoreconnect.apple.com/v1/apps
         """
-        url = f"{self.auth.base_url}/apps"
-        response = requests.get(
-            url,
-            headers=self.auth.headers,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
+        return self._get(f"{self.auth.base_url}/apps")
 
     def get_app_info(self, bundle_id: str):
         """
@@ -32,20 +19,13 @@ class AppInfoService:
         Endpoint: GET https://api.appstoreconnect.apple.com/v1/apps?filter[bundleId]={bundle_id}
         """
         url = f"{self.auth.base_url}/apps?filter[bundleId]={bundle_id}"
-        response = requests.get(
-            url,
-            headers=self.auth.headers,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
+        data = self._get(url)
         if data.get("data"):
             return data["data"][0]
         return {"error": "App not found"}
 
     def get_app_id_by_bundle_id(self, bundle_id: str):
-        """
-        Get the app ID for a given bundle ID.
-        """
+        """Get the app ID for a given bundle ID."""
         app_info = self.get_app_info(bundle_id)
         if app_info and "id" in app_info:
             return app_info["id"]
@@ -56,25 +36,18 @@ class AppInfoService:
         Fetch Xcode (power and performance) metrics for a specific app.
         Endpoint: GET https://api.appstoreconnect.apple.com/v1/apps/{APP_ID}/perfPowerMetrics
         """
-        url = f"{self.auth.base_url}/apps/{app_id}/perfPowerMetrics"
         headers = self.auth.headers.copy()
         headers["Accept"] = "application/vnd.apple.xcode-metrics+json, application/json"
-        response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
+        return self._get(
+            f"{self.auth.base_url}/apps/{app_id}/perfPowerMetrics",
+            headers=headers)
 
     def fetch_customer_reviews(self, app_id: str):
         """
         Fetch customer reviews for a specific app.
         Endpoint: GET https://api.appstoreconnect.apple.com/v1/apps/{APP_ID}/customerReviews
         """
-        url = f"{self.auth.base_url}/apps/{app_id}/customerReviews"
-        response = requests.get(
-            url,
-            headers=self.auth.headers,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
+        return self._get(f"{self.auth.base_url}/apps/{app_id}/customerReviews")
 
     def get_latest_editable_app_store_version_id(self, app_id: str):
         """
@@ -82,18 +55,10 @@ class AppInfoService:
         (specifically PREPARE_FOR_SUBMISSION), sorted by version string descending.
         Returns the ID if found, otherwise None.
         """
-        # We filter by PREPARE_FOR_SUBMISSION and sort by versionString descending
-        # to get the latest editable version. limit=1 ensures we only get the
-        # top one.
         url = (f"{self.auth.base_url}/apps/{app_id}/appStoreVersions"
                f"?filter[appStoreState]=PREPARE_FOR_SUBMISSION"
                f"&sort=-versionString&limit=1")
-        response = requests.get(
-            url,
-            headers=self.auth.headers,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
+        data = self._get(url)
         if data.get("data") and len(data["data"]) > 0:
             version_id = data["data"][0]["id"]
             version_string = data["data"][0]["attributes"]["versionString"]
