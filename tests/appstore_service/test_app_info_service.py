@@ -1,12 +1,18 @@
 """Unit tests for appstore_service.app_info_service module."""
+from unittest.mock import Mock, patch
+
 import pytest
 import requests
-from unittest.mock import Mock, patch, MagicMock
-from appstore_service.app_info_service import AppInfoService, REQUEST_TIMEOUT
+
+from appstore_service._base import REQUEST_TIMEOUT
+from appstore_service.app_info_service import AppInfoService
 
 
 class TestAppInfoService:
     """Test cases for AppInfoService class."""
+
+    mock_auth: Mock
+    service: AppInfoService
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -23,13 +29,13 @@ class TestAppInfoService:
                 {"id": "123", "type": "apps", "attributes": {"name": "Test App"}}
             ]
         }
-        
+
         mock_response = Mock()
         mock_response.json.return_value = expected_response
         mock_get.return_value = mock_response
-        
+
         result = self.service.list_apps()
-        
+
         mock_get.assert_called_once_with(
             "https://api.appstoreconnect.apple.com/v1/apps",
             headers={"Authorization": "Bearer test_token"},
@@ -43,7 +49,7 @@ class TestAppInfoService:
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.HTTPError("API Error")
         mock_get.return_value = mock_response
-        
+
         with pytest.raises(requests.HTTPError):
             self.service.list_apps()
 
@@ -63,13 +69,13 @@ class TestAppInfoService:
                 }
             ]
         }
-        
+
         mock_response = Mock()
         mock_response.json.return_value = expected_response
         mock_get.return_value = mock_response
-        
+
         result = self.service.get_app_info(bundle_id)
-        
+
         mock_get.assert_called_once_with(
             f"https://api.appstoreconnect.apple.com/v1/apps?filter[bundleId]={bundle_id}",
             headers={"Authorization": "Bearer test_token"},
@@ -82,13 +88,13 @@ class TestAppInfoService:
         """Test get_app_info when app is not found."""
         bundle_id = "com.example.nonexistent"
         expected_response = {"data": []}
-        
+
         mock_response = Mock()
         mock_response.json.return_value = expected_response
         mock_get.return_value = mock_response
-        
+
         result = self.service.get_app_info(bundle_id)
-        
+
         assert result == {"error": "App not found"}
 
     @patch('requests.get')
@@ -97,7 +103,7 @@ class TestAppInfoService:
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.HTTPError("API Error")
         mock_get.return_value = mock_response
-        
+
         with pytest.raises(requests.HTTPError):
             self.service.get_app_info("com.example.test")
 
@@ -109,9 +115,9 @@ class TestAppInfoService:
             "id": "123",
             "attributes": {"bundleId": bundle_id}
         }
-        
+
         result = self.service.get_app_id_by_bundle_id(bundle_id)
-        
+
         mock_get_app_info.assert_called_once_with(bundle_id)
         assert result == "123"
 
@@ -120,9 +126,9 @@ class TestAppInfoService:
         """Test get_app_id_by_bundle_id when app is not found."""
         bundle_id = "com.example.nonexistent"
         mock_get_app_info.return_value = {"error": "App not found"}
-        
+
         result = self.service.get_app_id_by_bundle_id(bundle_id)
-        
+
         assert result is None
 
     @patch.object(AppInfoService, 'get_app_info')
@@ -133,9 +139,9 @@ class TestAppInfoService:
             "attributes": {"bundleId": bundle_id}
             # Missing "id" field
         }
-        
+
         result = self.service.get_app_id_by_bundle_id(bundle_id)
-        
+
         assert result is None
 
     def test_request_timeout_constant(self):

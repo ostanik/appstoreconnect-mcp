@@ -112,13 +112,19 @@ class AppStore:
         except requests.exceptions.HTTPError as err:
             return self._handle_error(err)
 
+    SUPPORTED_PLATFORMS = ("IOS", "MAC_OS", "TV_OS", "VISION_OS")
+
     def release_version(
             self,
             bundle_id,
             version_string,
             build_number,
-            _platform="IOS"):
-        """Creates a new version, assigns a build and submits it for review."""
+            platform="IOS"):
+        """Assigns a build to an existing version and submits it for review."""
+        if platform not in self.SUPPORTED_PLATFORMS:
+            return {
+                "error": f"Unsupported platform {platform!r}. "
+                         f"Expected one of: {', '.join(self.SUPPORTED_PLATFORMS)}."}
         try:
             app_id = self.app_info_service.get_app_id_by_bundle_id(bundle_id)
             if not app_id:
@@ -135,8 +141,9 @@ class AppStore:
             version_info = self._find_version_info(app_id, version_string)
             if not version_info:
                 return {
-                    "error": f"Version {version_string} not found. "
-                             f"Please create it on App Store Connect first."}
+                    "error": f"Version {version_string} not found for platform "
+                             f"{platform}. Please create it on App Store Connect "
+                             f"first."}
 
             return self._handle_version_state(version_info, build_id)
 
@@ -215,6 +222,25 @@ class AppStore:
         return {
             "error": f"Version is in an unhandled state: '{version_state}'. No action taken."}
 
+    def submit_for_review(self, bundle_id, version_string):
+        """Submit an existing App Store version for review.
+
+        Looks up the app by bundle ID, finds the App Store version with the
+        given version string, and submits it. Assumes the version already
+        exists in App Store Connect and has a build associated with it.
+        """
+        try:
+            app_id = self.app_info_service.get_app_id_by_bundle_id(bundle_id)
+            if not app_id:
+                return {"error": f"App with bundle ID {bundle_id} not found."}
+            version_info = self._find_version_info(app_id, version_string)
+            if not version_info:
+                return {
+                    "error": f"Version {version_string} not found for app {bundle_id}."}
+            return self.version_service.submit_for_review(version_info["id"])
+        except requests.exceptions.HTTPError as err:
+            return self._handle_error(err)
+
     def create_beta_group(self, name, bundle_id):
         """Create a new beta group."""
         try:
@@ -231,6 +257,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Interact with the App Store Connect API.")
     subparsers = parser.add_subparsers(dest="action", required=True)
+
+    # List apps
+    subparsers.add_parser("list_apps", help="List all apps on the account.")
 
     # Get app info
     parser_get_app = subparsers.add_parser(

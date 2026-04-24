@@ -1,28 +1,13 @@
 """Service for managing App Store Connect beta testing operations."""
-import requests
-from .api_auth import AppStoreConnectAuth
-
-# Default timeout for all requests (30 seconds)
-REQUEST_TIMEOUT = 30
+from ._base import BaseService
 
 
-class BetaService:
+class BetaService(BaseService):
     """Service for managing App Store Connect beta testing functionality."""
 
-    def __init__(self, auth: AppStoreConnectAuth):
-        self.auth = auth
-
     def fetch_beta_groups(self, app_id: str):
-        """
-        Fetch a list of beta groups for a specific app.
-        """
-        url = f"{self.auth.base_url}/betaGroups?filter[app]={app_id}"
-        response = requests.get(
-            url,
-            headers=self.auth.headers,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
+        """Fetch a list of beta groups for a specific app."""
+        return self.get_json(f"{self.auth.base_url}/betaGroups?filter[app]={app_id}")
 
     def add_tester_to_groups(
             self,
@@ -30,10 +15,7 @@ class BetaService:
             group_ids: list,
             first_name: str = None,
             last_name: str = None):
-        """
-        Add a new beta tester and assign them to specified beta groups.
-        """
-        url = f"{self.auth.base_url}/betaTesters"
+        """Add a new beta tester and assign them to specified beta groups."""
         group_data = [{"type": "betaGroups", "id": group_id}
                       for group_id in group_ids]
 
@@ -54,26 +36,12 @@ class BetaService:
                 }
             }
         }
-
-        response = requests.post(
-            url,
-            headers=self.auth.headers,
-            json=payload,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
+        return self.post_json(f"{self.auth.base_url}/betaTesters", payload)
 
     def _get_beta_tester_id_by_email(self, email: str, app_id: str):
-        """
-        Helper function to find a beta tester's ID by their email for a specific app.
-        """
+        """Find a beta tester's ID by email for a specific app."""
         url = f"{self.auth.base_url}/betaTesters?filter[email]={email}&filter[apps]={app_id}"
-        response = requests.get(
-            url,
-            headers=self.auth.headers,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
+        data = self.get_json(url)
         if data.get("data"):
             return data["data"][0]["id"]
         return None
@@ -83,75 +51,33 @@ class BetaService:
             email: str,
             group_ids: list,
             app_id: str):
-        """
-        Remove a beta tester from specified beta groups.
-        """
+        """Remove a beta tester from specified beta groups."""
         tester_id = self._get_beta_tester_id_by_email(email, app_id)
         if not tester_id:
             return False
 
         url = f"{self.auth.base_url}/betaTesters/{tester_id}/relationships/betaGroups"
-        linkages_data = [{"type": "betaGroups", "id": group_id}
-                         for group_id in group_ids]
-        payload = {"data": linkages_data}
-
-        response = requests.delete(
-            url,
-            headers=self.auth.headers,
-            json=payload,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.status_code == 204
+        payload = {
+            "data": [{"type": "betaGroups", "id": group_id} for group_id in group_ids]
+        }
+        status_code = self.delete_status(url, payload)
+        return status_code == 204
 
     def list_beta_testers(self, app_id: str):
-        """
-        List all beta testers for a specific app.
-        """
-        url = f"{self.auth.base_url}/betaTesters?filter[apps]={app_id}"
-        response = requests.get(
-            url,
-            headers=self.auth.headers,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
+        """List all beta testers for a specific app."""
+        return self.get_json(f"{self.auth.base_url}/betaTesters?filter[apps]={app_id}")
 
     def list_testers_in_group(self, group_id: str):
-        """
-        Fetch a list of beta testers from a specific beta group.
-        """
-        url = f"{self.auth.base_url}/betaGroups/{group_id}/betaTesters"
-        response = requests.get(
-            url,
-            headers=self.auth.headers,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
+        """Fetch a list of beta testers from a specific beta group."""
+        return self.get_json(f"{self.auth.base_url}/betaGroups/{group_id}/betaTesters")
 
     def create_beta_group(self, app_id: str, name: str):
-        """
-        Create a new beta group for a specific app.
-        """
-        url = f"{self.auth.base_url}/betaGroups"
+        """Create a new beta group for a specific app."""
         payload = {
             "data": {
                 "type": "betaGroups",
-                "attributes": {
-                    "name": name
-                },
-                "relationships": {
-                    "app": {
-                        "data": {
-                            "type": "apps",
-                            "id": app_id
-                        }
-                    }
-                }
+                "attributes": {"name": name},
+                "relationships": self.app_relationship(app_id),
             }
         }
-        response = requests.post(
-            url,
-            headers=self.auth.headers,
-            json=payload,
-            timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
+        return self.post_json(f"{self.auth.base_url}/betaGroups", payload)
