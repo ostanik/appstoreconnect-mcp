@@ -12,11 +12,11 @@ class BuildService(BaseService):
         ?filter[app]={APP_ID}&include=preReleaseVersion
         """
         url = f"{self.auth.base_url}/builds?filter[app]={app_id}&include=preReleaseVersion&limit=50"
-        return self._get(url)
+        return self.get_json(url)
 
     def get_build_details(self, build_id: str):
         """
         Fetch details for a specific build.
         Endpoint: GET https://api.appstoreconnect.apple.com/v1/builds/{build_id}
         """
-        return self._get(f"{self.auth.base_url}/builds/{build_id}")
+        return self.get_json(f"{self.auth.base_url}/builds/{build_id}")

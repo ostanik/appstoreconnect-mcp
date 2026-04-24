@@ -7,7 +7,7 @@ class BetaService(BaseService):
 
     def fetch_beta_groups(self, app_id: str):
         """Fetch a list of beta groups for a specific app."""
-        return self._get(f"{self.auth.base_url}/betaGroups?filter[app]={app_id}")
+        return self.get_json(f"{self.auth.base_url}/betaGroups?filter[app]={app_id}")
 
     def add_tester_to_groups(
             self,
@@ -36,12 +36,12 @@ class BetaService(BaseService):
                 }
             }
         }
-        return self._post(f"{self.auth.base_url}/betaTesters", payload)
+        return self.post_json(f"{self.auth.base_url}/betaTesters", payload)
 
     def _get_beta_tester_id_by_email(self, email: str, app_id: str):
         """Find a beta tester's ID by email for a specific app."""
         url = f"{self.auth.base_url}/betaTesters?filter[email]={email}&filter[apps]={app_id}"
-        data = self._get(url)
+        data = self.get_json(url)
         if data.get("data"):
             return data["data"][0]["id"]
         return None
@@ -60,16 +60,16 @@ class BetaService(BaseService):
         payload = {
             "data": [{"type": "betaGroups", "id": group_id} for group_id in group_ids]
         }
-        status_code = self._delete(url, payload)
+        status_code = self.delete_status(url, payload)
         return status_code == 204
 
     def list_beta_testers(self, app_id: str):
         """List all beta testers for a specific app."""
-        return self._get(f"{self.auth.base_url}/betaTesters?filter[apps]={app_id}")
+        return self.get_json(f"{self.auth.base_url}/betaTesters?filter[apps]={app_id}")
 
     def list_testers_in_group(self, group_id: str):
         """Fetch a list of beta testers from a specific beta group."""
-        return self._get(f"{self.auth.base_url}/betaGroups/{group_id}/betaTesters")
+        return self.get_json(f"{self.auth.base_url}/betaGroups/{group_id}/betaTesters")
 
     def create_beta_group(self, app_id: str, name: str):
         """Create a new beta group for a specific app."""
@@ -77,7 +77,7 @@ class BetaService(BaseService):
             "data": {
                 "type": "betaGroups",
                 "attributes": {"name": name},
-                "relationships": self._app_relationship(app_id),
+                "relationships": self.app_relationship(app_id),
             }
         }
-        return self._post(f"{self.auth.base_url}/betaGroups", payload)
+        return self.post_json(f"{self.auth.base_url}/betaGroups", payload)

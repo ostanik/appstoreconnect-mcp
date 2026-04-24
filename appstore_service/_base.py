@@ -7,12 +7,16 @@ REQUEST_TIMEOUT = 30
 
 
 class BaseService:
-    """Encapsulates HTTP I/O against the App Store Connect API."""
+    """Encapsulates HTTP I/O against the App Store Connect API.
+
+    Subclasses use `get_json` / `post_json` / `patch_json` / `delete_status`
+    to make authenticated requests against the configured `auth` instance.
+    """
 
     def __init__(self, auth: AppStoreConnectAuth):
         self.auth = auth
 
-    def _get(self, url, headers=None):
+    def get_json(self, url, headers=None):
         """GET `url` and return the decoded JSON body."""
         response = requests.get(
             url,
@@ -21,7 +25,7 @@ class BaseService:
         response.raise_for_status()
         return response.json()
 
-    def _post(self, url, payload):
+    def post_json(self, url, payload):
         """POST `payload` as JSON and return the decoded JSON body."""
         response = requests.post(
             url,
@@ -31,7 +35,7 @@ class BaseService:
         response.raise_for_status()
         return response.json()
 
-    def _patch(self, url, payload):
+    def patch_json(self, url, payload):
         """PATCH `payload` as JSON and return the decoded JSON body."""
         response = requests.patch(
             url,
@@ -41,7 +45,7 @@ class BaseService:
         response.raise_for_status()
         return response.json()
 
-    def _delete(self, url, payload=None):
+    def delete_status(self, url, payload=None):
         """DELETE `url` and return the response status code."""
         response = requests.delete(
             url,
@@ -52,6 +56,6 @@ class BaseService:
         return response.status_code
 
     @staticmethod
-    def _app_relationship(app_id):
+    def app_relationship(app_id):
         """Return the JSON:API relationship block pointing at `app_id`."""
         return {"app": {"data": {"type": "apps", "id": app_id}}}

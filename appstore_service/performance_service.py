@@ -7,4 +7,4 @@ class PerformanceService(BaseService):  # pylint: disable=too-few-public-methods
 
     def get_perf_power_metrics(self, app_id: str):
         """Get a list of performance power metrics for a specific app."""
-        return self._get(f"{self.auth.base_url}/apps/{app_id}/perfPowerMetrics")
+        return self.get_json(f"{self.auth.base_url}/apps/{app_id}/perfPowerMetrics")

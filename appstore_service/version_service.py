@@ -18,16 +18,16 @@ class VersionService(BaseService):
                     "versionString": version_string,
                     "platform": platform
                 },
-                "relationships": self._app_relationship(app_id),
+                "relationships": self.app_relationship(app_id),
             }
         }
-        return self._post(f"{self.auth.base_url}/appStoreVersions", payload)
+        return self.post_json(f"{self.auth.base_url}/appStoreVersions", payload)
 
     def get_version(self, app_id: str, version_string: str):
         """Get an app store version by version string."""
         url = (f"{self.auth.base_url}/appStoreVersions"
                f"?filter[app]={app_id}&filter[versionString]={version_string}")
-        return self._get(url)
+        return self.get_json(url)
 
     def associate_build_to_version(self, version_id: str, build_id: str):
         """Associate a build with an app version."""
@@ -38,7 +38,7 @@ class VersionService(BaseService):
                 "id": build_id
             }
         }
-        return self._patch(url, payload)
+        return self.patch_json(url, payload)
 
     def submit_for_review(self, version_id: str):
         """Submit an app version for review."""
@@ -55,7 +55,7 @@ class VersionService(BaseService):
                 }
             }
         }
-        return self._post(f"{self.auth.base_url}/appStoreVersionSubmissions", payload)
+        return self.post_json(f"{self.auth.base_url}/appStoreVersionSubmissions", payload)
 
     def release_pending_version(self, version_id: str):
         """Release an approved app version that is pending developer release."""
@@ -72,9 +72,9 @@ class VersionService(BaseService):
                 }
             }
         }
-        return self._post(
+        return self.post_json(
             f"{self.auth.base_url}/appStoreVersionReleaseRequests", payload)
 
     def list(self, app_id: str):
         """List all app store versions for an app."""
-        return self._get(f"{self.auth.base_url}/apps/{app_id}/appStoreVersions")
+        return self.get_json(f"{self.auth.base_url}/apps/{app_id}/appStoreVersions")

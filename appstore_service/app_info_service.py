@@ -11,7 +11,7 @@ class AppInfoService(BaseService):
         Fetch a list of all apps on the account.
         Endpoint: GET https://api.appstoreconnect.apple.com/v1/apps
         """
-        return self._get(f"{self.auth.base_url}/apps")
+        return self.get_json(f"{self.auth.base_url}/apps")
 
     def get_app_info(self, bundle_id: str):
         """
@@ -19,7 +19,7 @@ class AppInfoService(BaseService):
         Endpoint: GET https://api.appstoreconnect.apple.com/v1/apps?filter[bundleId]={bundle_id}
         """
         url = f"{self.auth.base_url}/apps?filter[bundleId]={bundle_id}"
-        data = self._get(url)
+        data = self.get_json(url)
         if data.get("data"):
             return data["data"][0]
         return {"error": "App not found"}
@@ -38,7 +38,7 @@ class AppInfoService(BaseService):
         """
         headers = self.auth.headers.copy()
         headers["Accept"] = "application/vnd.apple.xcode-metrics+json, application/json"
-        return self._get(
+        return self.get_json(
             f"{self.auth.base_url}/apps/{app_id}/perfPowerMetrics",
             headers=headers)
 
@@ -47,7 +47,7 @@ class AppInfoService(BaseService):
         Fetch customer reviews for a specific app.
         Endpoint: GET https://api.appstoreconnect.apple.com/v1/apps/{APP_ID}/customerReviews
         """
-        return self._get(f"{self.auth.base_url}/apps/{app_id}/customerReviews")
+        return self.get_json(f"{self.auth.base_url}/apps/{app_id}/customerReviews")
 
     def get_latest_editable_app_store_version_id(self, app_id: str):
         """
@@ -58,7 +58,7 @@ class AppInfoService(BaseService):
         url = (f"{self.auth.base_url}/apps/{app_id}/appStoreVersions"
                f"?filter[appStoreState]=PREPARE_FOR_SUBMISSION"
                f"&sort=-versionString&limit=1")
-        data = self._get(url)
+        data = self.get_json(url)
         if data.get("data") and len(data["data"]) > 0:
             version_id = data["data"][0]["id"]
             version_string = data["data"][0]["attributes"]["versionString"]
