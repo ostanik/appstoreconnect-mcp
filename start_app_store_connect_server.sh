@@ -6,7 +6,8 @@ cd "$(dirname "$0")"
 
 # --- Logging for setup ---
 # We'll create a new log file for each run to keep things clean.
-LOG_FILE="/Users/alan.ostanik/Desktop/SenseScripts/logs/app_store_connect_startup.log"
+mkdir -p "$(dirname "$0")/logs"
+LOG_FILE="$(dirname "$0")/logs/app_store_connect_startup.log"
 echo "--- Starting MCP Server at $(date) ---" > "$LOG_FILE"
 echo "Current directory: $(pwd)" >> "$LOG_FILE"
 

@@ -14,9 +14,5 @@
 *.key
 *.csr
 *.key
-*.log
-*.log.*
-*.log.*.*
-*.log.*.*.*
-*.log.*.*.*.*
-*.log.*.*.*.*.*
+*.log*
+.coverage

@@ -21,13 +21,6 @@ def get_app_info(bundle_id):
     return app_store_instance.get_app_info(bundle_id)
 
 
-def list_beta_testers(group_id):
-    """Returns a list of beta testers for a specific group."""
-    if not group_id:
-        return {"error": "Missing required parameter: groupId"}, 400
-    return app_store_instance.list_testers_in_group(group_id)
-
-
 def list_beta_groups(bundle_id):
     """Returns a list of beta groups for an app."""
     if not bundle_id:
@@ -59,11 +52,10 @@ def release_version(bundle_id, version_string, build_number, platform="IOS"):
 
 
 def submit_for_review(bundle_id, version):
-    """Submitting an app version for review."""
+    """Submit an app version for review."""
     if not bundle_id or not version:
         return {"error": "Missing required parameters: bundleId, version"}, 400
-    return {"error": "submit_for_review requires bundle_id, version, and build_number. "
-                     "Use release_version instead."}, 400
+    return app_store_instance.submit_for_review(bundle_id, version)
 
 
 def create_beta_group(name, bundle_id):
